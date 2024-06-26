@@ -31,6 +31,20 @@ const userSchema = new mongoose.Schema({
 },{
     timestamps:true,
 });
+// Password encryption
+userSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) {
+      next();
+    }
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  });
+  
+  // Password verification
+  userSchema.methods.matchPassword = async function (enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
+  };
+  
 
 //Export the model
 module.exports = mongoose.model('User', userSchema);
